@@ -3,6 +3,7 @@ set(INCLUDE
     inc/button.hpp
     inc/textbox.hpp
     inc/label.hpp
+    inc/combobox.hpp
 )
 
 set(SOURCES
@@ -10,6 +11,7 @@ set(SOURCES
     src/button.cpp
     src/textbox.cpp
     src/label.cpp
+    src/combobox.cpp
 )
 
 add_library(WinAPIGUI STATIC ${SOURCES} ${INCLUDE})

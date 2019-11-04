@@ -140,4 +140,12 @@ namespace gui
         return label;
     }
 
+    Combobox* Window::CreateCombobox(int x, int y, int width, int height)
+    {
+        Combobox* combo_box = new Combobox(x, y, width, height, next_child_control_id_, hwnd_);
+        child_controls_.emplace(next_child_control_id_, combo_box);
+        ++next_child_control_id_;
+        return combo_box;
+    }
+
 }

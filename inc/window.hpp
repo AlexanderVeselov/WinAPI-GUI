@@ -3,6 +3,7 @@
 #include "button.hpp"
 #include "textbox.hpp"
 #include "label.hpp"
+#include "combobox.hpp"
 
 #include <Windows.h>
 #include <unordered_map>
@@ -24,6 +25,7 @@ namespace gui
         void OnTextboxChange(std::uint32_t text_id);
 
         Label* CreateLabel(int x, int y, int width, int height);
+        Combobox* CreateCombobox(int x, int y, int width, int height);
 
     private:
         std::unordered_map<std::uint32_t, void*> child_controls_;
