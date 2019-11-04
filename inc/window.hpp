@@ -2,6 +2,7 @@
 
 #include "button.hpp"
 #include "textbox.hpp"
+#include "label.hpp"
 
 #include <Windows.h>
 #include <unordered_map>
@@ -21,6 +22,8 @@ namespace gui
 
         Textbox* CreateTextbox(int x, int y, int width, int height);
         void OnTextboxChange(std::uint32_t text_id);
+
+        Label* CreateLabel(int x, int y, int width, int height);
 
     private:
         std::unordered_map<std::uint32_t, void*> child_controls_;

@@ -132,4 +132,12 @@ namespace gui
         return textbox;
     }
 
+    Label* Window::CreateLabel(int x, int y, int width, int height)
+    {
+        Label* label = new Label(x, y, width, height, next_child_control_id_, hwnd_);
+        child_controls_.emplace(next_child_control_id_, label);
+        ++next_child_control_id_;
+        return label;
+    }
+
 }

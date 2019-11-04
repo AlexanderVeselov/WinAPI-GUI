@@ -2,12 +2,14 @@ set(INCLUDE
     inc/window.hpp
     inc/button.hpp
     inc/textbox.hpp
+    inc/label.hpp
 )
 
 set(SOURCES
     src/window.cpp
     src/button.cpp
     src/textbox.cpp
+    src/label.cpp
 )
 
 add_library(WinAPIGUI STATIC ${SOURCES} ${INCLUDE})
