@@ -20,7 +20,7 @@ namespace gui
             parent_,                                    // parent window
             (HMENU)id_,                                 // button ID
             hInstance,                                  // application handle
-            nullptr);                                      // used with multiple windows, nullptr
+            nullptr);                                   // used with multiple windows, nullptr
     }
 
     std::string const& Textbox::GetText() const

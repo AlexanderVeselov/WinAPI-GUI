@@ -4,6 +4,7 @@ set(INCLUDE
     inc/textbox.hpp
     inc/label.hpp
     inc/combobox.hpp
+    inc/canvas.hpp
 )
 
 set(SOURCES
@@ -12,6 +13,7 @@ set(SOURCES
     src/textbox.cpp
     src/label.cpp
     src/combobox.cpp
+    src/canvas.cpp
 )
 
 add_library(WinAPIGUI STATIC ${SOURCES} ${INCLUDE})

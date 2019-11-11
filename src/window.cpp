@@ -12,7 +12,7 @@ namespace gui
 
 #define WINDOW_CLASS "WindowClass1"
 
-    LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+    static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
@@ -146,6 +146,14 @@ namespace gui
         child_controls_.emplace(next_child_control_id_, combo_box);
         ++next_child_control_id_;
         return combo_box;
+    }
+
+    Canvas* Window::CreateCanvas(int x, int y, int width, int height)
+    {
+        Canvas* canvas = new Canvas(x, y, width, height, next_child_control_id_, hwnd_);
+        child_controls_.emplace(next_child_control_id_, canvas);
+        ++next_child_control_id_;
+        return canvas;
     }
 
 }
