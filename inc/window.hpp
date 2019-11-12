@@ -19,16 +19,17 @@ namespace gui
         void Show();
         std::string const& GetCaption() const { return caption_; }
 
-        Button* CreateButton(char const* label, int x, int y, int width, int height);
+        template <class T, typename ...Args>
+        T* CreateChildControl(int x, int y, int width, int height, Args&& ... args)
+        {
+            T* control = new T(x, y, width, height, next_child_control_id_, hwnd_);
+            child_controls_.emplace(next_child_control_id_, control);
+            ++next_child_control_id_;
+            return control;
+        }
+
         void OnButtonPress(std::uint32_t button_id);
-
-        Textbox* CreateTextbox(int x, int y, int width, int height);
         void OnTextboxChange(std::uint32_t text_id);
-
-        Label* CreateLabel(int x, int y, int width, int height);
-        Combobox* CreateCombobox(int x, int y, int width, int height);
-
-        Canvas* CreateCanvas(int x, int y, int width, int height);
 
     private:
         std::unordered_map<std::uint32_t, void*> child_controls_;

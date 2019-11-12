@@ -78,7 +78,7 @@ namespace gui
                 D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
                 dpiX, dpiY,
                 D2D1_RENDER_TARGET_USAGE_NONE),
-            D2D1::HwndRenderTargetProperties(hwnd_, size, D2D1_PRESENT_OPTIONS_IMMEDIATELY),
+            D2D1::HwndRenderTargetProperties(hwnd_, size),
             &render_target_
         );
 

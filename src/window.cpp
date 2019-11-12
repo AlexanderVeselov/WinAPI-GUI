@@ -94,14 +94,6 @@ namespace gui
         ShowWindow(hwnd_, SW_SHOWNORMAL);
     }
 
-    Button* Window::CreateButton(char const* label, int x, int y, int width, int height)
-    {
-        Button* button = new Button(label, x, y, width, height, next_child_control_id_, hwnd_);
-        child_controls_.emplace(next_child_control_id_, button);
-        ++next_child_control_id_;
-        return button;
-    }
-
     void Window::OnButtonPress(std::uint32_t button_id)
     {
         auto it = child_controls_.find(button_id);
@@ -122,38 +114,6 @@ namespace gui
         }
 
         static_cast<Textbox*>(it->second)->OnChangeCallback();
-    }
-
-    Textbox* Window::CreateTextbox(int x, int y, int width, int height)
-    {
-        Textbox* textbox = new Textbox(x, y, width, height, next_child_control_id_, hwnd_);
-        child_controls_.emplace(next_child_control_id_, textbox);
-        ++next_child_control_id_;
-        return textbox;
-    }
-
-    Label* Window::CreateLabel(int x, int y, int width, int height)
-    {
-        Label* label = new Label(x, y, width, height, next_child_control_id_, hwnd_);
-        child_controls_.emplace(next_child_control_id_, label);
-        ++next_child_control_id_;
-        return label;
-    }
-
-    Combobox* Window::CreateCombobox(int x, int y, int width, int height)
-    {
-        Combobox* combo_box = new Combobox(x, y, width, height, next_child_control_id_, hwnd_);
-        child_controls_.emplace(next_child_control_id_, combo_box);
-        ++next_child_control_id_;
-        return combo_box;
-    }
-
-    Canvas* Window::CreateCanvas(int x, int y, int width, int height)
-    {
-        Canvas* canvas = new Canvas(x, y, width, height, next_child_control_id_, hwnd_);
-        child_controls_.emplace(next_child_control_id_, canvas);
-        ++next_child_control_id_;
-        return canvas;
     }
 
 }
