@@ -77,8 +77,8 @@ namespace gui
             WINDOW_CLASS,                       // name of the window class
             caption_.c_str(),                   // title of the window
             WS_OVERLAPPED | WS_SYSMENU,         // window style
-            100,                                // x-position of the window
-            100,                                // y-position of the window
+            CW_USEDEFAULT,                      // x-position of the window
+            CW_USEDEFAULT,                      // y-position of the window
             1280,                               // width of the window
             720,                                // height of the window
             nullptr,                            // we have no parent window

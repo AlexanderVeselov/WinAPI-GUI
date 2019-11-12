@@ -1,6 +1,7 @@
 #include "canvas.hpp"
 #include <Windows.h>
 #include <cassert>
+#include <stdexcept>
 
 namespace gui
 {
@@ -12,28 +13,8 @@ namespace gui
         switch (message)
         {
         case WM_DESTROY:
-        case WM_CLOSE:
             PostQuitMessage(0);
-            break;
-        case WM_SYSKEYDOWN:
-        case WM_KEYDOWN:
-            break;
-        case WM_SYSKEYUP:
-        case WM_KEYUP:
-            break;
-        case WM_LBUTTONDOWN:
-            break;
-        case WM_LBUTTONUP:
-            break;
-        case WM_RBUTTONDOWN:
-            break;
-        case WM_RBUTTONUP:
-            break;
-        case WM_COMMAND:
-            break;
-        case WM_PAINT:
-            canvas->RenderImpl();
-            break;
+            return 0;
         default:
             // Handle any messages the switch statement didn't
             return DefWindowProc(hwnd, message, wParam, lParam);
@@ -56,7 +37,7 @@ namespace gui
         wc.hInstance = hInstance;
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-        wc.lpszClassName = "CANVAS";
+        wc.lpszClassName = "MyCanvas";
 
         RegisterClassEx(&wc);
 
@@ -64,7 +45,7 @@ namespace gui
         hwnd_ = CreateWindowEx(0,
             wc.lpszClassName,                   // name of the window class
             "",                                 // title of the window
-            WS_CHILD | WS_VISIBLE,              // window style
+            WS_CHILDWINDOW | WS_VISIBLE,              // window style
             x_,                                 // x-position of the window
             y_,                                 // y-position of the window
             width_,                             // width of the window
@@ -72,65 +53,105 @@ namespace gui
             parent_,                            // parent window
             (HMENU)id_,                         // id
             hInstance,                          // application handle
-            nullptr);                           // used with multiple windows
+            this);                              // used with multiple windows
 
-        SetWindowLongPtr(hwnd_, GWLP_USERDATA, (LONG_PTR)this);
+        HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d_factory_);
+        if (FAILED(hr))
+        {
+            throw std::runtime_error("Failed to create d2d1 factory!");
+        }
 
-        HDC hdc = GetDC(hwnd_);
-        back_hdc_ = CreateCompatibleDC(hdc);
-        back_bitmap_ = CreateCompatibleBitmap(hdc, width_, height_);
-        SelectObject(back_hdc_, back_bitmap_);
-        ReleaseDC(hwnd_, hdc);
+        RECT rc;
+        GetClientRect(hwnd_, &rc);
 
-        font_ = CreateFont(12, 0, 0, 0, 300, false, false, false,
-            DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-            DEFAULT_QUALITY, DEFAULT_PITCH, "Arial");
+        D2D1_SIZE_U size = D2D1::SizeU(
+            rc.right - rc.left,
+            rc.bottom - rc.top
+        );
+
+        FLOAT dpiX, dpiY;
+        d2d_factory_->GetDesktopDpi(&dpiX, &dpiY);
+
+        // Create a Direct2D render target.
+        hr = d2d_factory_->CreateHwndRenderTarget(
+            D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_HARDWARE,
+                D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
+                dpiX, dpiY,
+                D2D1_RENDER_TARGET_USAGE_NONE),
+            D2D1::HwndRenderTargetProperties(hwnd_, size, D2D1_PRESENT_OPTIONS_IMMEDIATELY),
+            &render_target_
+        );
+
+        if (FAILED(hr))
+        {
+            throw std::runtime_error("Failed to create canvas rendertarget!");
+        }
     }
 
-    void Canvas::Flush()
+    void Canvas::DrawBegin()
     {
-        InvalidateRect((HWND)hwnd_, NULL, false);
+        render_target_->BeginDraw();
+        render_target_->SetTransform(D2D1::Matrix3x2F::Identity());
     }
 
-    void Canvas::RenderImpl()
+    void Canvas::DrawEnd()
     {
-        // Copy data from the backbuffer
-        PAINTSTRUCT ps;
-        BeginPaint(hwnd_, &ps);
-        BitBlt(ps.hdc, 0, 0, width_, height_, back_hdc_, 0, 0, SRCCOPY);
-        EndPaint(hwnd_, &ps);
+        HRESULT hr = render_target_->EndDraw();
+        if (FAILED(hr))
+        {
+            throw std::runtime_error("Failed to end drawing!");
+        }
     }
 
     void Canvas::DrawPoint(int x, int y, std::uint32_t r, std::uint32_t g, std::uint32_t b)
     {
-        SetPixel(back_hdc_, x, y, RGB(r, g, b));
+        //render_target_->D
     }
 
-    void Canvas::DrawLine(int x1, int y1, int x2, int y2)
+    ID2D1SolidColorBrush* Canvas::GetBrush(Color const& color)
     {
-        MoveToEx(back_hdc_, x1, y1, 0);
-        LineTo(back_hdc_, x2, y2);
+        auto it = brush_cache_.find(color);
+        if (it == brush_cache_.end())
+        {
+            ID2D1SolidColorBrush* brush = nullptr;
+            D2D1_COLOR_F c = D2D1::ColorF(color.r, color.g, color.b);
+            HRESULT hr = render_target_->CreateSolidColorBrush(c, &brush);
+            if (FAILED(hr))
+            {
+                throw std::runtime_error("Failed to create color brush!");
+            }
+
+            brush_cache_.emplace(color, brush);
+            return brush;
+        }
+        else
+        {
+            return it->second;
+        }
     }
 
-    void Canvas::DrawRectangle(int x1, int y1, int x2, int y2)
+    void Canvas::DrawLine(int x1, int y1, int x2, int y2, Color const& color)
     {
-        Rectangle(back_hdc_, x1, y1, x2, y2);
+        D2D1_POINT_2F p1 = D2D1::Point2F(x1, y1);
+        D2D1_POINT_2F p2 = D2D1::Point2F(x2, y2);
+
+        render_target_->DrawLine(p1, p2, GetBrush(color), 1.0f);
     }
 
-    void Canvas::Clear(std::uint32_t r, std::uint32_t g, std::uint32_t b)
+    void Canvas::DrawRectangle(float x1, float y1, float x2, float y2, Color const& color)
     {
-        RECT client_rect = { 0, 0, width_, height_ };
-        FillRect(back_hdc_, &client_rect, CreateSolidBrush(RGB(r, g, b)));
+        D2D1_RECT_F rect = D2D1::RectF(x1, y1, x2, y2);
+
+        render_target_->FillRectangle(&rect, GetBrush(color));
+    }
+
+    void Canvas::Clear(Color const& color)
+    {
+        render_target_->Clear(D2D1::ColorF(color.r, color.g, color.b));
     }
 
     void Canvas::PaintText(std::string const& text, int x, int y)
     {
-        RECT client_rect = { x, y, width_, height_ };
-        SetBkMode(back_hdc_, TRANSPARENT);
-
-        HFONT old_font = (HFONT)SelectObject(back_hdc_, font_);
-        DrawText(back_hdc_, text.c_str(), text.size(), &client_rect, DT_TOP | DT_LEFT);
-        SelectObject(back_hdc_, old_font);
     }
 
 }
