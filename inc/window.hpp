@@ -22,16 +22,17 @@ namespace gui
         template <class T, typename ...Args>
         T* CreateChildControl(int x, int y, int width, int height, Args&& ... args)
         {
-            T* control = new T(x, y, width, height, next_child_control_id_, hwnd_);
-            child_controls_.emplace(next_child_control_id_, control);
-            ++next_child_control_id_;
+            T* control = new T(x, y, width, height, next_child_control_id_, hwnd_, std::forward<Args>(args)...);
+            child_controls_.emplace(next_child_control_id_++, control);
             return control;
         }
+
+    private:
+        static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
         void OnButtonPress(std::uint32_t button_id);
         void OnTextboxChange(std::uint32_t text_id);
 
-    private:
         std::unordered_map<std::uint32_t, void*> child_controls_;
         static std::uint32_t next_child_control_id_;
         HWND hwnd_;

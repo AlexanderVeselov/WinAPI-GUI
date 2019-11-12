@@ -12,7 +12,7 @@ namespace gui
 
 #define WINDOW_CLASS "WindowClass1"
 
-    static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+    LRESULT CALLBACK Window::WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
@@ -64,7 +64,7 @@ namespace gui
 
         wc.cbSize = sizeof(WNDCLASSEX);
         wc.style = CS_HREDRAW | CS_VREDRAW;
-        wc.lpfnWndProc = WindowProc;
+        wc.lpfnWndProc = &Window::WindowProc;
         wc.hInstance = hInstance;
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
