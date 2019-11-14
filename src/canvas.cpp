@@ -2,6 +2,9 @@
 #include <Windows.h>
 #include <cassert>
 #include <stdexcept>
+#include <sstream>
+#include <locale>
+#include <codecvt>
 
 namespace gui
 {
@@ -59,6 +62,13 @@ namespace gui
                 canvas->OnRightButtonUp(x, y);
             }
             break;
+
+        case WM_MOUSEWHEEL:
+            if (canvas)
+            {
+                std::int16_t delta = GET_WHEEL_DELTA_WPARAM(wParam);
+                canvas->OnMouseWheel(delta);
+            }
 
         default:
             // Handle any messages the switch statement didn't
@@ -135,6 +145,25 @@ namespace gui
         {
             throw std::runtime_error("Failed to create canvas rendertarget!");
         }
+
+        hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+            __uuidof(dwrite_factory_), reinterpret_cast<IUnknown**>(&dwrite_factory_));
+
+        if (FAILED(hr))
+        {
+            throw std::runtime_error("Failed to create DirectWrite factory!");
+        }
+
+        hr = dwrite_factory_->CreateTextFormat(
+            L"Verdana",
+            NULL,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            DWRITE_FONT_STYLE_NORMAL,
+            DWRITE_FONT_STRETCH_NORMAL,
+            12,
+            L"", //locale
+            &text_format_);
+
     }
 
     void Canvas::DrawBegin()
@@ -184,7 +213,7 @@ namespace gui
         D2D1_POINT_2F p1 = D2D1::Point2F(x1, y1);
         D2D1_POINT_2F p2 = D2D1::Point2F(x2, y2);
 
-        render_target_->DrawLine(p1, p2, GetBrush(color), 1.0f);
+        render_target_->DrawLine(p1, p2, GetBrush(color), 0.5f);
     }
 
     void Canvas::DrawRectangle(float x1, float y1, float x2, float y2, Color const& color)
@@ -199,8 +228,13 @@ namespace gui
         render_target_->Clear(D2D1::ColorF(color.r, color.g, color.b));
     }
 
-    void Canvas::PaintText(std::string const& text, int x, int y)
+    void Canvas::DrawText(std::string const& text, int x, int y, Color const& color)
     {
+        // Convert to wstring
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        std::wstring wtext = converter.from_bytes(text);
+
+        render_target_->DrawTextA(wtext.c_str(), wtext.size(), text_format_, D2D1::RectF(x, y, width_, height_), GetBrush(color));
     }
 
 }
