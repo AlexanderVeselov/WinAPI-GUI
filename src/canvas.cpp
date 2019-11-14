@@ -5,7 +5,7 @@
 
 namespace gui
 {
-    static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+    LRESULT CALLBACK Canvas::WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         Canvas* canvas = (Canvas*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
@@ -15,6 +15,51 @@ namespace gui
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
+        case WM_MOUSEMOVE:
+            if (canvas)
+            {
+                UINT x = LOWORD(lParam);
+                UINT y = HIWORD(lParam);
+                canvas->OnMouseMove(x, y);
+            }
+            break;
+
+        case WM_LBUTTONDOWN:
+            if (canvas)
+            {
+                UINT x = LOWORD(lParam);
+                UINT y = HIWORD(lParam);
+                canvas->OnLeftButtonDown(x, y);
+            }
+            break;
+
+        case WM_LBUTTONUP:
+            if (canvas)
+            {
+                UINT x = LOWORD(lParam);
+                UINT y = HIWORD(lParam);
+                canvas->OnLeftButtonUp(x, y);
+            }
+            break;
+
+        case WM_RBUTTONDOWN:
+            if (canvas)
+            {
+                UINT x = LOWORD(lParam);
+                UINT y = HIWORD(lParam);
+                canvas->OnRightButtonDown(x, y);
+            }
+            break;
+
+        case WM_RBUTTONUP:
+            if (canvas)
+            {
+                UINT x = LOWORD(lParam);
+                UINT y = HIWORD(lParam);
+                canvas->OnRightButtonUp(x, y);
+            }
+            break;
+
         default:
             // Handle any messages the switch statement didn't
             return DefWindowProc(hwnd, message, wParam, lParam);
@@ -33,7 +78,7 @@ namespace gui
 
         wc.cbSize = sizeof(WNDCLASSEX);
         wc.style = CS_HREDRAW | CS_VREDRAW;
-        wc.lpfnWndProc = WindowProc;
+        wc.lpfnWndProc = &Canvas::WindowProc;
         wc.hInstance = hInstance;
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
@@ -45,7 +90,7 @@ namespace gui
         hwnd_ = CreateWindowEx(0,
             wc.lpszClassName,                   // name of the window class
             "",                                 // title of the window
-            WS_CHILDWINDOW | WS_VISIBLE,              // window style
+            WS_CHILDWINDOW | WS_VISIBLE,        // window style
             x_,                                 // x-position of the window
             y_,                                 // y-position of the window
             width_,                             // width of the window
@@ -53,7 +98,9 @@ namespace gui
             parent_,                            // parent window
             (HMENU)id_,                         // id
             hInstance,                          // application handle
-            this);                              // used with multiple windows
+            nullptr);                           // used with multiple windows
+
+        SetWindowLongPtr(hwnd_, GWLP_USERDATA, (LONG_PTR)this);
 
         HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d_factory_);
         if (FAILED(hr))
@@ -81,6 +128,8 @@ namespace gui
             D2D1::HwndRenderTargetProperties(hwnd_, size),
             &render_target_
         );
+
+        render_target_->SetDpi(dpiX, dpiY);
 
         if (FAILED(hr))
         {

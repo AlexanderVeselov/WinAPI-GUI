@@ -1,11 +1,5 @@
 #pragma once
 
-#include "button.hpp"
-#include "textbox.hpp"
-#include "label.hpp"
-#include "combobox.hpp"
-#include "canvas.hpp"
-
 #include <Windows.h>
 #include <unordered_map>
 #include <string>
@@ -27,6 +21,12 @@ namespace gui
             return control;
         }
 
+        virtual void OnMouseMove(std::uint32_t x, std::uint32_t y) {}
+        virtual void OnLeftButtonDown(std::uint32_t x, std::uint32_t y) {}
+        virtual void OnLeftButtonUp(std::uint32_t x, std::uint32_t y) {}
+        virtual void OnRightButtonDown(std::uint32_t x, std::uint32_t y) {}
+        virtual void OnRightButtonUp(std::uint32_t x, std::uint32_t y) {}
+
     private:
         static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -37,7 +37,6 @@ namespace gui
         static std::uint32_t next_child_control_id_;
         HWND hwnd_;
         std::string caption_;
-
 
     };
 }

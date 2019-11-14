@@ -43,7 +43,14 @@ namespace gui
         void PaintText(std::string const& text, int x, int y);
         void Clear(Color const& color);
 
+        virtual void OnMouseMove(std::uint32_t x, std::uint32_t y) {}
+        virtual void OnLeftButtonDown(std::uint32_t x, std::uint32_t y) {}
+        virtual void OnLeftButtonUp(std::uint32_t x, std::uint32_t y) {}
+        virtual void OnRightButtonDown(std::uint32_t x, std::uint32_t y) {}
+        virtual void OnRightButtonUp(std::uint32_t x, std::uint32_t y) {}
+
     private:
+        static LRESULT CALLBACK Canvas::WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
         ID2D1SolidColorBrush* GetBrush(Color const& color);
 
         int x_, y_;

@@ -1,5 +1,8 @@
 #include "window.hpp"
 
+#include "button.hpp"
+#include "textbox.hpp"
+
 #include <Windows.h>
 #include <WinUser.h>
 
@@ -29,22 +32,66 @@ namespace gui
         case WM_SYSKEYUP:
         case WM_KEYUP:
             break;
+
+        case WM_MOUSEMOVE:
+            if (window && static_cast<UINT8>(wParam) == MK_LBUTTON)
+            {
+                UINT x = LOWORD(lParam);
+                UINT y = HIWORD(lParam);
+                window->OnMouseMove(x, y);
+            }
+            break;
+
         case WM_LBUTTONDOWN:
+            if (window)
+            {
+                UINT x = LOWORD(lParam);
+                UINT y = HIWORD(lParam);
+                window->OnLeftButtonDown(x, y);
+            }
             break;
+
         case WM_LBUTTONUP:
+            if (window)
+            {
+                UINT x = LOWORD(lParam);
+                UINT y = HIWORD(lParam);
+                window->OnLeftButtonUp(x, y);
+            }
             break;
+
         case WM_RBUTTONDOWN:
+            if (window)
+            {
+                UINT x = LOWORD(lParam);
+                UINT y = HIWORD(lParam);
+                window->OnRightButtonDown(x, y);
+            }
             break;
+
         case WM_RBUTTONUP:
+            if (window)
+            {
+                UINT x = LOWORD(lParam);
+                UINT y = HIWORD(lParam);
+                window->OnRightButtonUp(x, y);
+            }
             break;
+
         case WM_COMMAND:
             switch (HIWORD(wParam))
             {
             case BN_CLICKED:
-                window->OnButtonPress((std::uint32_t)LOWORD(wParam));
+                if (window)
+                {
+                    window->OnButtonPress((std::uint32_t)LOWORD(wParam));
+                }
                 break;
             case EN_CHANGE:
-                window->OnTextboxChange((std::uint32_t)LOWORD(wParam));
+                if (window)
+                {
+                    window->OnTextboxChange((std::uint32_t)LOWORD(wParam));
+                }
             }
             break;
         default:
@@ -59,7 +106,6 @@ namespace gui
     Window::Window(const char* caption, HINSTANCE hInstance)
         : caption_(caption)
     {
-        std::cout << "Window::Window()" << std::endl;
         WNDCLASSEX wc = {};
 
         wc.cbSize = sizeof(WNDCLASSEX);
@@ -87,6 +133,8 @@ namespace gui
             nullptr);                           // used with multiple windows
 
         SetWindowLongPtr(hwnd_, GWLP_USERDATA, (LONG_PTR)this);
+
+        ShowWindow(hwnd_, SW_SHOWNORMAL);
     }
 
     void Window::Show()
