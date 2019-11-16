@@ -79,6 +79,40 @@ namespace gui
 
     }
 
+    ID2D1Factory* Canvas::GetD2DFactory()
+    {
+        static ID2D1Factory* d2d_factory_ = nullptr;
+
+        if (!d2d_factory_)
+        {
+            HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d_factory_);
+            if (FAILED(hr))
+            {
+                throw std::runtime_error("Failed to create d2d1 factory!");
+            }
+        }
+
+        return d2d_factory_;
+    }
+
+    IDWriteFactory* Canvas::GetDWriteFactory()
+    {
+        static IDWriteFactory* dwrite_factory_ = nullptr;
+
+        if (!dwrite_factory_)
+        {
+            HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+                __uuidof(dwrite_factory_), reinterpret_cast<IUnknown**>(&dwrite_factory_));
+
+            if (FAILED(hr))
+            {
+                throw std::runtime_error("Failed to create dwrite factory!");
+            }
+        }
+
+        return dwrite_factory_;
+    }
+
     Canvas::Canvas(int x, int y, int width, int height, std::uint32_t id, HWND parent)
         : x_(x), y_(y), width_(width), height_(height), id_(id), parent_(parent)
     {
@@ -112,11 +146,6 @@ namespace gui
 
         SetWindowLongPtr(hwnd_, GWLP_USERDATA, (LONG_PTR)this);
 
-        HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d_factory_);
-        if (FAILED(hr))
-        {
-            throw std::runtime_error("Failed to create d2d1 factory!");
-        }
 
         RECT rc;
         GetClientRect(hwnd_, &rc);
@@ -127,10 +156,10 @@ namespace gui
         );
 
         FLOAT dpiX, dpiY;
-        d2d_factory_->GetDesktopDpi(&dpiX, &dpiY);
+        GetD2DFactory()->GetDesktopDpi(&dpiX, &dpiY);
 
         // Create a Direct2D render target.
-        hr = d2d_factory_->CreateHwndRenderTarget(
+        HRESULT hr = GetD2DFactory()->CreateHwndRenderTarget(
             D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_HARDWARE,
                 D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
                 dpiX, dpiY,
@@ -146,15 +175,13 @@ namespace gui
             throw std::runtime_error("Failed to create canvas rendertarget!");
         }
 
-        hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
-            __uuidof(dwrite_factory_), reinterpret_cast<IUnknown**>(&dwrite_factory_));
 
         if (FAILED(hr))
         {
             throw std::runtime_error("Failed to create DirectWrite factory!");
         }
 
-        hr = dwrite_factory_->CreateTextFormat(
+        hr = GetDWriteFactory()->CreateTextFormat(
             L"Verdana",
             NULL,
             DWRITE_FONT_WEIGHT_NORMAL,
@@ -183,7 +210,7 @@ namespace gui
 
     void Canvas::DrawPoint(int x, int y, std::uint32_t r, std::uint32_t g, std::uint32_t b)
     {
-        //render_target_->D
+        assert(!"Not implemented!");
     }
 
     ID2D1SolidColorBrush* Canvas::GetBrush(Color const& color)

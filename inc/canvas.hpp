@@ -56,13 +56,14 @@ namespace gui
         static LRESULT CALLBACK Canvas::WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
         ID2D1SolidColorBrush* GetBrush(Color const& color);
 
+        static ID2D1Factory* GetD2DFactory();
+        static IDWriteFactory* GetDWriteFactory();
+
         int x_, y_;
         int width_, height_;
         std::uint32_t id_;
         HWND hwnd_;
         HWND parent_;
-        ID2D1Factory* d2d_factory_ = nullptr;
-        IDWriteFactory* dwrite_factory_ = nullptr;
         IDWriteTextFormat* text_format_ = nullptr;
         ID2D1HwndRenderTarget* render_target_ = nullptr;
         std::map<Color, ID2D1SolidColorBrush*> brush_cache_;
