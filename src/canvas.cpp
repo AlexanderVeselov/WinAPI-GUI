@@ -210,15 +210,15 @@ namespace gui
 
     void Canvas::DrawLine(int x1, int y1, int x2, int y2, Color const& color)
     {
-        D2D1_POINT_2F p1 = D2D1::Point2F(x1, y1);
-        D2D1_POINT_2F p2 = D2D1::Point2F(x2, y2);
+        D2D1_POINT_2F p1 = D2D1::Point2F(x1 + 0.5f, y1 + 0.5f);
+        D2D1_POINT_2F p2 = D2D1::Point2F(x2 + 0.5f, y2 + 0.5f);
 
-        render_target_->DrawLine(p1, p2, GetBrush(color), 0.5f);
+        render_target_->DrawLine(p1, p2, GetBrush(color), 1.0f);
     }
 
     void Canvas::DrawRectangle(float x1, float y1, float x2, float y2, Color const& color)
     {
-        D2D1_RECT_F rect = D2D1::RectF(x1, y1, x2, y2);
+        D2D1_RECT_F rect = D2D1::RectF(x1 + 0.5f, y1 + 0.5f, x2 + 0.5f, y2 + 0.5f);
 
         render_target_->FillRectangle(&rect, GetBrush(color));
     }
